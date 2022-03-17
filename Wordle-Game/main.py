@@ -15,11 +15,12 @@ class game():
 
 
 def classic():
-    filepath = "../words/words-5.json"
+    filepath = "words/words-5.json"
     with open(filepath) as words_json:
-        word = random.choice(list(words_json))
+        words = json.load(words_json)
+        word = random.choice(list(words.keys()))
         print(word)
-    return()
+    return(game(word, 6))
 
 
 def main():
@@ -27,6 +28,8 @@ def main():
     mode = int(input("Input:"))
     if(mode == 1):
         game = classic()
+        print(game.word)
+        print(game.num_guesses)
     elif(mode == 2):
         print("Not implemented yet")
     elif(mode == 3):
