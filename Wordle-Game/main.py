@@ -16,7 +16,7 @@ def classic():
         words = json.load(words_json)
         word = random.choice(list(words.keys()))
 
-    game = Game(word, 6, True, True, True,);
+    game = Game(word, 6, True, True, True, True);
     game.start_game()
 
 
