@@ -2,14 +2,16 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import json
 import time
+import copy
 #from functools import partial
 
 class Game():
-    def __init__(self, word, num_guesses, gui_flag = True, verbose_flag = False, enable_debug = False):
+    def __init__(self, word, num_guesses, gui_flag = True, keyboard_flag = True, verbose_flag = False, enable_debug = False):
         self._word = word.lower()
         self._word_arr = [char for char in self._word]
         self._word_len = len(word)
         self._guesses_arr = []
+        self._guesses_arr_len = len(self._guesses_arr)
         self._num_guesses = num_guesses
 
         self.game_over = False
@@ -19,11 +21,17 @@ class Game():
             self._words = json.load(words_json)
 
         #gui flags
+        #gui has to be enabled to enable keyboard
+        #gui can run without keyboard
         self._enable_gui = gui_flag
+        self._enable_keyboard = keyboard_flag
+        if not(self._enable_gui):
+            self._enable_keyboard = False
 
         #verbose flags
         self._enable_verbose = verbose_flag
 
+        #debug flag
         self._enable_debug = enable_debug
 
     def _set_gui(self):
@@ -54,11 +62,16 @@ class Game():
                 self._gui_letters[ypos].append(tk.Label(self._gui_frames[ypos][xpos], text="", font = ("Arial", 50)))
                 self._gui_letters[ypos][xpos].place(relx = .5, rely=.5, anchor=tk.CENTER)
 
+        if(self._enable_keyboard):
+
+            self._keyboard = tk.Tk()
+            self._keyboard.title("Keyboard")
 
         guess_var = tk.StringVar()
         self._gui_guess_entry = tk.Entry(self._gui, textvariable = guess_var, font = ("Arial", 25))
         self._gui_guess_entry.place(relx=.5, y=window_height-100, anchor=tk.CENTER)
-        guess_button = tk.Button(self._gui, text = "Guess", command=self.make_guess).place(relx=.5, y = window_height-50, anchor=tk.CENTER)
+        self._gui_guess_button = tk.Button(self._gui, text = "Guess", command=self.make_guess)
+        self._gui_guess_button.place(relx=.5, y = window_height-50, anchor=tk.CENTER)
         self._gui.bind('<Return>', self._event_enter_gui)
 
         self._gui_error_label = tk.Label(self._gui, text="")
@@ -122,43 +135,73 @@ class Game():
                 #do something verbose if needed
 
         guess_arr = [char for char in guess]
+        temp_word_arr = copy.deepcopy(self._word_arr)
 
         self._guesses_arr.append([])
-        #game over condition
-        if(len(self._guesses_arr) > self._num_guesses):
+        self._guesses_arr_len = len(self._guesses_arr)
+
+        print(temp_word_arr)
+
+        for i in range(self._word_len):
+            self._guesses_arr[self._guesses_arr_len-1].append("e")
+            if (guess_arr[i] == temp_word_arr[i]):
+                self._guesses_arr[self._guesses_arr_len-1][i] = "g"
+                temp_word_arr[i] = None
+
+        for i in range(self._word_len):
+            if (guess_arr[i] in temp_word_arr):
+                if not(self._guesses_arr[self._guesses_arr_len-1][i] == "g"):
+                    self._guesses_arr[self._guesses_arr_len-1][i] = "y"
+                    temp_word_arr[temp_word_arr.index(guess[i])] = None
+
+        print(temp_word_arr)
+        print(self._guesses_arr[self._guesses_arr_len-1])
+
+        #loop to print each letter
+        i = 0
+        for i in range(self._word_len):
+            #Adding line to board
+            #green or perfect placement
+            if (self._guesses_arr[self._guesses_arr_len-1][i] == "g"):
+                if(self._enable_gui):
+                    self._gui_frames[self._guesses_arr_len-1][i].config(background="green")
+                    self._gui_letters[self._guesses_arr_len-1][i].config(text = guess_arr[i].upper())
+                    self._gui_letters[self._guesses_arr_len-1][i].config(background="green")
+                #do something verbose
+
+            #yellow, or letter in word but wrong spot
+            elif (self._guesses_arr[self._guesses_arr_len-1][i] == "y"):
+                if(self._enable_gui):
+                    self._gui_frames[self._guesses_arr_len-1][i].config(background="yellow")
+                    self._gui_letters[self._guesses_arr_len-1][i].config(text = guess_arr[i].upper())
+                    self._gui_letters[self._guesses_arr_len-1][i].config(background="yellow")
+                #do something verbose
+            else:
+                if(self._enable_gui):
+                    self._gui_letters[self._guesses_arr_len-1][i].config(text = guess_arr[i].upper())
+                #do something verbose
+            i += 1
+
+
+        #end game conditions
+        #game won
+        if(guess == self._word):
             if(self._enable_gui):
+                self._gui_guess_entry.config(state='disable')
+                self._gui_guess_button.config(state='disable')
+                self._gui_error_label.config(text = "Congratulations! You Win!")
+            #do something verbose
+            self.game_over = True
+
+        #max guess reached, game lost
+        elif(len(self._guesses_arr) == self._num_guesses):
+            if(self._enable_gui):
+                self._gui_guess_entry.config(state='disable')
+                self._gui_guess_button.config(state='disable')
                 self._gui_error_label.config(text = "Game Over")
             if(self._enable_verbose):
                 print("Game Over. Maximum Guess Reached.")
-                print("Word was - ", self._word, " -")
+                print("Word was - ", self._word.upper(), " -")
             self.game_over = True
-        else:
-            self._guesses_arr[len(self._guesses_arr)-1] = guess_arr
-            for i in range(self._word_len):
-                if(self._enable_gui):
-                    self._gui_letters[len(self._guesses_arr)-1][i].config(text = guess_arr[i].upper())
-                #do something verbose
-
-                #Adding line to board
-                #green or perfect placement
-                if (guess_arr[i] == self._word_arr[i]):
-                    if(self._enable_gui):
-                        self._gui_frames[len(self._guesses_arr)-1][i].config(background="green")
-                        self._gui_letters[len(self._guesses_arr)-1][i].config(background="green")
-                    #do something verbose
-
-                #yellow, or letter in word but wrong spot
-                elif (guess_arr[i] in self._word_arr):
-                    if(self._enable_gui):
-                        self._gui_frames[len(self._guesses_arr)-1][i].config(background="yellow")
-                        self._gui_letters[len(self._guesses_arr)-1][i].config(background="yellow")
-                    #do something verbose
-
-            #ending game if correct word is Guessed
-            if(guess == self._word):
-                if(self._enable_gui):
-                    self._gui_error_label.config(text = "Congratulations! You Win!")
-                #do something verbose
-                self.game_over = True
 
         return()
