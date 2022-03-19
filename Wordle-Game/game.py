@@ -1,25 +1,34 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 import json
+import time
 #from functools import partial
 
 class Game():
-    def __init__(self, word, num_guesses, gui_flag = True):
+    def __init__(self, word, num_guesses, gui_flag = True, verbose_flag = False, enable_debug = False):
         self._word = word.lower()
         self._word_arr = [char for char in self._word]
         self._word_len = len(word)
         self._guesses_arr = []
         self._num_guesses = num_guesses
 
+        self.game_over = False
+
         filepath = "words/words-" + str(self._word_len) + ".json"
         with open(filepath) as words_json:
             self._words = json.load(words_json)
 
+        #gui flags
         self._enable_gui = gui_flag
 
-        self._gui = tk.Tk()
+        #verbose flags
+        self._enable_verbose = verbose_flag
+
+        self._enable_debug = enable_debug
 
     def _set_gui(self):
+
+        self._gui = tk.Tk()
 
         window_width = 5 + (105*self._word_len)
         window_height = 250 + (105*self._num_guesses)
@@ -56,19 +65,20 @@ class Game():
         self._gui_error_label.place(relx=.5, y = window_height-25, anchor=tk.CENTER)
 
 
-
-    def start_game_verbose(self):
-        #do something, set verbose flag
-        return()
-
-    def start_game_no_gui(self):
-        #do something, set verbose flag, set no gui flag
-        return()
-
     def start_game(self):
-        print(self._word)
-        self._set_gui()
-        self._gui.mainloop()
+        if(self._enable_debug):
+            print("Word is: - ", self._word.upper(), " -")
+        if(self._enable_verbose):
+            print("+---+---+---+---+---+")
+            print("|", "h"+"\u0332", "| E | L | l |", "o"+"\u0332", "|")
+            print("+---+---+---+---+---+")
+            print("Lower case letters like l are not in the word")
+            print("Lower case letters underlined like", "h"+"\u0332", "and", "o"+"\u0332", "are in the word but not in the correct position")
+            print("Upper case letters like E and L are in the word and in the correct position")
+            print("Game Begining...")
+        if(self._enable_gui):
+            self._set_gui()
+            self._gui.mainloop()
 
     def end_game(self):
         self._gui.destroy()
@@ -78,6 +88,7 @@ class Game():
 
     def make_guess(self, guess=None):
 
+        # Set Guess to the string in the guess entry box
         if (guess == None):
             guess = self._gui_guess_entry.get()
             self._gui_guess_entry.delete(0,tk.END)
@@ -87,29 +98,40 @@ class Game():
         if(not guess in self._words):
             if(self._enable_gui):
                 self._gui_error_label.config(text = "Not a Valid Word, Try Again")
-            #do something verbose
+            if(self._enable_verbose):
+                print("- ", guess.upper(), "- Not a Valid Word, Try Again")
             return
         else:
             if(self._enable_gui):
                 self._gui_error_label.config(text = "")
-            #do something verbose
+            if(self._enable_verbose):
+                temp = None
+                #do something verbose if needed
 
         if(len(guess) != self._word_len):
             if(self._enable_gui):
                 self._gui_error_label.config(text = "Not the Correct Word Length, Try Again")
-            #do something verbose
+            if(self._enable_verbose):
+                print("- ", guess.upper(), "- Not the Correct Word Length, Try Again")
             return
         else:
             if(self._enable_gui):
                 self._gui_error_label.config(text = "")
-            #do something verbos
+            if(self._enable_verbose):
+                temp = None
+                #do something verbose if needed
 
         guess_arr = [char for char in guess]
 
         self._guesses_arr.append([])
+        #game over condition
         if(len(self._guesses_arr) > self._num_guesses):
-            self._gui_error_label.config(text = "Game Over")
-            #do something verbose
+            if(self._enable_gui):
+                self._gui_error_label.config(text = "Game Over")
+            if(self._enable_verbose):
+                print("Game Over. Maximum Guess Reached.")
+                print("Word was - ", self._word, " -")
+            self.game_over = True
         else:
             self._guesses_arr[len(self._guesses_arr)-1] = guess_arr
             for i in range(self._word_len):
@@ -117,6 +139,7 @@ class Game():
                     self._gui_letters[len(self._guesses_arr)-1][i].config(text = guess_arr[i].upper())
                 #do something verbose
 
+                #Adding line to board
                 #green or perfect placement
                 if (guess_arr[i] == self._word_arr[i]):
                     if(self._enable_gui):
@@ -131,9 +154,11 @@ class Game():
                         self._gui_letters[len(self._guesses_arr)-1][i].config(background="yellow")
                     #do something verbose
 
+            #ending game if correct word is Guessed
+            if(guess == self._word):
+                if(self._enable_gui):
+                    self._gui_error_label.config(text = "Congratulations! You Win!")
+                #do something verbose
+                self.game_over = True
 
-
-
-        # return something to indicate guess
-        print("Guessed ", guess)
         return()
