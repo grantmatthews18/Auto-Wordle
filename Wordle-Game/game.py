@@ -23,7 +23,7 @@ class Game():
 
         self.game_over = False
 
-        filepath = "words/words-" + str(self._word_len) + ".json"
+        filepath = "Words/wordle-words.json"
         with open(filepath) as words_json:
             self._words = json.load(words_json)
 
@@ -233,7 +233,7 @@ class Game():
         guess = guess.lower() #need to lowercase to compare with words list
 
         #check if guess is in list of words
-        if(not guess in self._words):
+        if not(guess in self._words) or (len(guess) != self._word_len):
             if(self._enable_gui):
                 self._update_gui(guess, "not_valid")
             if(self._enable_verbose):
