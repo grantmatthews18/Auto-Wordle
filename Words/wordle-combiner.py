@@ -2,7 +2,7 @@ import json
 
 words_lst = []
 
-with open("Words/wordle-answers.json", "r+") as words_ans_json:
+with open("Words/words-small.json", "r+") as words_ans_json:
     words = json.load(words_ans_json)
     for word in words:
         words_lst.append(word)
