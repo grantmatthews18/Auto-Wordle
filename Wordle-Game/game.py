@@ -8,7 +8,7 @@ import copy
 keys = ["q","w","e","r","t","y","u","i","o","p","a","s","d","f","g","h","j","k","l","z","x","c","v","b","n","m"]
 
 class Game():
-    def __init__(self, word, num_guesses, gui_flag = True, keyboard_flag = True, verbose_flag = False, enable_debug = False):
+    def __init__(self, word, num_guesses, gui_flag = False, keyboard_flag = False, verbose_flag = False, debug_flag = False):
         self._word = word.lower()
         self._word_arr = [char for char in self._word]
         self._word_len = len(word)
@@ -40,7 +40,7 @@ class Game():
         self._verbose_board_str = "+---+---+---+---+---+\n"
 
         #debug flag
-        self._enable_debug = enable_debug
+        self._enable_debug = debug_flag
 
     def _set_gui(self):
 
@@ -126,7 +126,13 @@ class Game():
             self._gui.mainloop()
 
     def end_game(self):
-        self._gui.destroy()
+        if(self._enable_debug):
+            print(self._verbose_board_str)
+        if(self._enable_verbose):
+            temp = None
+            #print stuff if needed
+        if(self._enable_gui):
+            self._gui.destroy()
 
     def _event_enter_gui(self, event):
         self.make_guess()
@@ -192,9 +198,6 @@ class Game():
         elif(flag == "valid"):
             guess_arr = [char for char in guess]
 
-            #clearing any lingering error because current guess is valid
-            self._gui_error_label.config(text = "")
-
             for i in range(self._word_len):
                 #Adding line to board
                 #green or perfect placement
@@ -222,6 +225,28 @@ class Game():
 
         else:
             print("Unspecified gui update flag: ", flag, " . See debug log for more information")
+
+    def _update_debug(self, guess = None, flag = ""):
+        if(flag == "valid"):
+            guess_arr = [char for char in guess]
+
+            for i in range(self._word_len):
+                #Adding line to board
+                #green or perfect placement
+                if (self._guesses_arr[self._guesses_arr_len-1][i] == "g"):
+                    self._verbose_board_str += "| " + (guess_arr[i].upper()+"\u0332") + " "
+
+                #yellow, or letter in word but wrong spot
+                elif (self._guesses_arr[self._guesses_arr_len-1][i] == "y"):
+                    self._verbose_board_str += "| " + (guess_arr[i]+"\u0332") + " "
+
+                #coloring any keyboard keys are not in the word
+                else:
+                    self._verbose_board_str += "| " + guess_arr[i] + " "
+
+            self._verbose_board_str += "|\n"
+            self._verbose_board_str += "+---+---+---+---+---+\n"
+
 
     def make_guess(self, guess=None):
 
@@ -275,6 +300,8 @@ class Game():
         #update verbose
         if(self._enable_verbose):
             self._update_verbose(guess, "valid")
+        if(self._enable_debug):
+            self._update_debug(guess, "valid")
 
         #end game conditions
         #game won
@@ -294,4 +321,4 @@ class Game():
             self.game_over = True
 
         #handle information returns
-        return(self._guesses_arr)
+        return(self._guesses_arr[len(self._guesses_arr)-1])
