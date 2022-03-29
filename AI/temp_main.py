@@ -3,6 +3,7 @@ import json
 import tkinter as tk
 import tkinter.ttk as ttk
 import sys
+import copy
 
 sys.path.insert(1, "Wordle-Game/")
 from game import *
@@ -15,26 +16,31 @@ def main():
     with open(filepath) as words_json:
         words = json.load(words_json)
 
-    word = "vegie"#random.choice(list(words.keys()))
-    print("Word is ", word)
+    total_guesses = 0
 
-    letter_weight = {}
-    for i in range(len(keys)):
-        letter_weight[keys[i]] = 1
+    for i in range(1):
+        word = "nymph"#random.choice(list(words.keys()))
+        print("Word is ", word)
 
-    simularity_modifier = []
-    for i in range(len(word)):
-        simularity_modifier.append(1)
+        letter_weight = {}
+        for i in range(len(keys)):
+            letter_weight[keys[i]] = 1
 
-    double_penalty = []
-    for i in range(len(word)-2):
-        double_penalty.append(1)
+        simularity_modifier = []
+        for i in range(len(word)):
+            simularity_modifier.append(1)
 
-    new_agent = ai.Agent(words, letter_weight, simularity_modifier, double_penalty)
-    new_game = Game(word, 100000, verbose_flag = True)
+        double_penalty = []
+        for i in range(len(word)-2):
+            double_penalty.append(1)
 
-    result = new_agent.solve_game(new_game)
-    print("Result is ", result)
+        new_agent = ai.Agent(filepath=filepath, letter_weight=letter_weight, simularity_modifier=simularity_modifier, double_penalty=double_penalty)
+        new_game = Game(word, 100000, debug_flag =True)
+
+        result = new_agent.solve_game(new_game)
+        total_guesses += result
+        print("Result is ", result)
+    print(total_guesses/len(words.keys()))
 
 if __name__ == '__main__':
     main()
