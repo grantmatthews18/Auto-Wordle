@@ -42,6 +42,9 @@ class Game():
         #debug flag
         self._enable_debug = debug_flag
 
+    def get_max_guesses(self):
+        return(self._num_guesses)
+
     def _set_gui(self):
 
         self._gui = tk.Tk()
