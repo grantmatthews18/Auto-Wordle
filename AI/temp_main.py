@@ -18,8 +18,8 @@ def main():
 
     total_guesses = 0
 
-    for i in range(1):
-        word = "nymph"#random.choice(list(words.keys()))
+    for word in list(words.keys()):
+        #word = random.choice(list(words.keys()))
         print("Word is ", word)
 
         letter_weight = {}
@@ -34,8 +34,8 @@ def main():
         for i in range(len(word)-2):
             double_penalty.append(1)
 
-        new_agent = ai.Agent(filepath=filepath, letter_weight=letter_weight, simularity_modifier=simularity_modifier, double_penalty=double_penalty)
-        new_game = Game(word, 100000, debug_flag =True)
+        new_agent = ai.Agent(filepath=filepath)
+        new_game = Game(word, 6, debug_flag =True)
 
         result = new_agent.solve_game(new_game)
         total_guesses += result
