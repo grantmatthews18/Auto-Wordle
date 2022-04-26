@@ -1,5 +1,5 @@
 # A Simple Python Script to split and organize the words.json file
-# Words provided by https://github.com/dwyl/english-words
+# Words provided by Wordle game files
 
 import json
 
