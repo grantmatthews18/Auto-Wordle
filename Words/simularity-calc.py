@@ -1,3 +1,5 @@
+#ADD measure for how many words a guess would remove from the board
+
 
 import json
 import copy
