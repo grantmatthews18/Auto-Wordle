@@ -332,7 +332,35 @@ class Agent():
 
         return(words_dict)
 
-    def _update_costs(self, words):
+    def _update_costs(self, words, letters):
+        #Key is the string word and value is list of itemset tuples
+        words_itemsets = {}
+
+        #used to store the frequency values of all possible itemsets
+        itemsets = {}
+
+        #splitting words
+        #AND
+        #calculating frequency of itemsets
+        #AND
+        #merging
+        #doing all at once to save CPU cycles
+
+        for word in words.keys():
+            words_itemsets[word] = []
+            #split word, add letter position to letter
+            pos = 0
+            for char in word:
+                word_arr.append(char+str(pos))
+                pos +=1
+
+            #add all possible itemsets to both word_temsets and itemsets
+            for i in range(len(word)-1):
+                
+
+
+
+
         words_dict = self._calculate_support(words)
         for word in words.keys():
             for i in range(len(words[word])):
