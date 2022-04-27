@@ -8,7 +8,7 @@ import copy
 import decision_tree as dt
 import itertools as it
 
-from agent_constants import *
+from constants import *
 
 class Agent():
     def __init__(self,id = 0, words = None, filepath = None, dna = None):
@@ -39,6 +39,12 @@ class Agent():
                 self._words[word][i] = float(self._words[word][i]/self._dna[i])
 
         self._words_letters = copy.deepcopy(self._words)
+        #removing all words that contain duplicate letters, since this list is all about removing as many letters as possible from the board
+        for word in list(self._words_letters):
+            for char in word:
+                if word.count(char) > 1:
+                    self._words_letters.pop(word)
+                    break
         self._possible_letters = copy.deepcopy(POSSIBLE_LETTERS_DICT_TRUE)
 
         self._num_guesses = 0
@@ -90,7 +96,7 @@ class Agent():
                     if(len(words_cpy) == 0):
                         #Not a possible result array, skip it
                         None
-                    elif(len(words_cpy) <= (self._max_guesses - depth)):
+                    elif(len(words_cpy)+1 <= (self._max_guesses - depth)):
                         #Result array is possible AND guarenteed to win
                         #Skip exploring because game doesn't want us to win
                         None
@@ -111,6 +117,7 @@ class Agent():
 
             #check if word based guess is a win. If it is, we can set head node to win, since we will always choose the guarenteed win strategy
             if(head.get_node(0).get_cost() == "win"):
+                head.add_to_best_path("word")
                 head.set_cost("win")
                 return
 
@@ -150,10 +157,10 @@ class Agent():
                             words_letters_cpy.pop(word)
 
 
-                    if(len(words_letters_cpy) == 0):
+                    if(len(words_cpy) == 0):
                         #Not a possible result array, skip it
                         None
-                    elif(len(words_letters_cpy) <= (self._max_guesses - depth)):
+                    elif(len(words_cpy)+1 <= (self._max_guesses - depth)):
                         #Result array is possible AND guarenteed to win
                         #Skip exploring because game doesn't want us to win
                         None
@@ -174,6 +181,7 @@ class Agent():
 
             #check if letter based guess is a win. If it is, we can set head node to win, since we will always choose the guarenteed win strategy
             if(head.get_node(1).get_cost() == "win"):
+                head.add_to_best_path("letter")
                 head.set_cost("win")
             #else neither strategy guarentees a win, so node is set to lose
             else:
@@ -206,23 +214,18 @@ class Agent():
         if(self._num_guesses > 1):
             tree = dt.Node()
             self._evaluate_decision_tree(tree, self._num_guesses, self._words, self._words_letters, self._possible_letters)
-            print("evaluated tree for guess ", tree.get_cost())
 
             #if least optimal path still guarentees win, we use the word guessing strategy
             if(tree.get_cost() == "win"):
-                print("Chose word based")
                 best_word = self._get_guess_from_words(self._words)
                 return(best_word)
             elif(tree.get_cost() == "lose"):
-                print("Chose letter based")
                 #check to confirm it is still possible to make a word guess
                 if(len(self._words_letters) == 0):
                     best_word = self._get_guess_from_words(self._words)
                 else:
                     best_word = self._get_guess_from_words(self._words_letters)
                 return(best_word)
-            else:
-                print("I broken oopsy")
         #for first guess we just use all possible words
         elif(self._num_guesses == 1):
             best_word = self._get_guess_from_words(self._words_letters)
@@ -371,13 +374,10 @@ class Agent():
         self._max_guesses = game.get_max_guesses()
         while not game.game_over:
             self._guesses.append(self._get_guess())
-            print("Guessed: ", self._guesses[self._num_guesses])
             guess_arr = [char for char in self._guesses[self._num_guesses]]
             self._results.append(game.make_guess(self._guesses[self._num_guesses]))
 
             self._modify_word_lists(self._guesses[self._num_guesses], guess_arr, self._results[self._num_guesses])
-
             self._num_guesses += 1
-
         game.end_game()
         return(self._num_guesses)
