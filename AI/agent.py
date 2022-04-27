@@ -45,14 +45,10 @@ class Agent():
                 if word.count(char) > 1:
                     self._words_letters.pop(word)
                     break
-        self._possible_letters = copy.deepcopy(POSSIBLE_LETTERS_DICT_TRUE)
 
         self._num_guesses = 0
         self._max_guesses = 0
 
-        self._guesses = []
-        self._results = []
-        self._possible_result_arrays = copy.deepcopy(POSSIBLE_RESULT_ARRAY)
 
     def _evaluate_decision_tree(self, head, depth, words, words_letters, possible_letters):
         if(depth <= self._max_guesses):
@@ -208,30 +204,30 @@ class Agent():
         best_word = best_words[0][0]
         return(best_word)
 
-    def _get_guess(self):
+    def _get_guess(self, words, words_letters, possible_letters):
 
         #checking if it is the first guess, we have no info at this point and we know it is possible to lose to there is no point in evaluating the tree
         if(self._num_guesses > 1):
             tree = dt.Node()
-            self._evaluate_decision_tree(tree, self._num_guesses, self._words, self._words_letters, self._possible_letters)
+            self._evaluate_decision_tree(tree, self._num_guesses, words, words_letters, possible_letters)
 
             #if least optimal path still guarentees win, we use the word guessing strategy
             if(tree.get_cost() == "win"):
-                best_word = self._get_guess_from_words(self._words)
+                best_word = self._get_guess_from_words(words)
                 return(best_word)
             elif(tree.get_cost() == "lose"):
                 #check to confirm it is still possible to make a word guess
-                if(len(self._words_letters) == 0):
-                    best_word = self._get_guess_from_words(self._words)
+                if(len(words_letters) == 0):
+                    best_word = self._get_guess_from_words(words)
                 else:
-                    best_word = self._get_guess_from_words(self._words_letters)
+                    best_word = self._get_guess_from_words(words_letters)
                 return(best_word)
         #for first guess we just use all possible words
         elif(self._num_guesses == 1):
-            best_word = self._get_guess_from_words(self._words_letters)
+            best_word = self._get_guess_from_words(words_letters)
             return(best_word)
         elif(self._num_guesses == 0):
-            best_word = self._get_guess_from_words(self._words)
+            best_word = self._get_guess_from_words(words)
             return(best_word)
         else:
             raise Exeception("Agent's number of guesses is negative.")
@@ -272,7 +268,7 @@ class Agent():
                     return(True)
         return(False)
 
-    def _calculate_frequency(self, words_dict):
+    def _calculate_support(self, words_dict):
         #Key is the string word and value is list of itemset tuples
         words_itemsets = {}
 
@@ -337,47 +333,70 @@ class Agent():
 
         return(words_dict)
 
-    def _modify_word_lists(self, guess, guess_arr, result):
+    def _update_costs(self, words):
+        words_dict = self._calculate_support(words)
+        for word in words.keys():
+            for i in range(len(words[word])):
+                words[word][i] = float(words[word][i]/self._dna[i])
+
+
+    def _modify_word_lists(self, guess, guess_arr, result, words, words_letters, possible_letters):
         #remove guess from both word sets
-        if(guess in self._words):
-            self._words.pop(guess)
-        if (guess in self._words_letters.keys()):
-            self._words_letters.pop(guess)
+        if(guess in words):
+            words.pop(guess)
+        if (guess in words_letters.keys()):
+            words_letters.pop(guess)
 
         #remove all letters in current guess from possible letters
         for letter in guess_arr:
-            self._possible_letters[letter] = False
+            possible_letters[letter] = False
 
         #remove all words from words that do not match the info given by the result of the guess
         #mark all letters that could still possibly be in the final word
         letters_in_words = copy.deepcopy(POSSIBLE_LETTERS_DICT_FALSE)
-        for word in list(self._words):
+        for word in list(words):
             if(self._rule_out_wordbased(guess_arr, result, word)):
-                self._words.pop(word)
+                words.pop(word)
             else:
                 for i in range(len(word)):
                     letters_in_words[word[i]] = True
 
         for letter in list(letters_in_words):
             if(letters_in_words[letter]==False):
-                self._possible_letters[letter] = False
+                possible_letters[letter] = False
 
         #remove all words from words_letters that have the guessed letters
-        for word in list(self._words_letters):
-            if(self._rule_out_letterbased(word, self._possible_letters)):
-                self._words_letters.pop(word)
+        for word in list(words_letters):
+            if(self._rule_out_letterbased(word, possible_letters)):
+                words_letters.pop(word)
+
+        #update support counts and recalculate word value
 
 
 
     def solve_game(self, game):
+        #copy word lists to preserve them for future computation
+        game_words = copy.deepcopy(self._words)
+        game_words_letters = copy.deepcopy(self._words_letters)
+        possible_letters = copy.deepcopy(POSSIBLE_LETTERS_DICT_TRUE)
+
+        #set globals to proper values
         self._num_guesses = 0
         self._max_guesses = game.get_max_guesses()
-        while not game.game_over:
-            self._guesses.append(self._get_guess())
-            guess_arr = [char for char in self._guesses[self._num_guesses]]
-            self._results.append(game.make_guess(self._guesses[self._num_guesses]))
 
-            self._modify_word_lists(self._guesses[self._num_guesses], guess_arr, self._results[self._num_guesses])
+        guesses = []
+        results = []
+        while not game.game_over:
+
+            #get guess, add it to guesses
+            guess = self._get_guess(game_words, game_words_letters, possible_letters)
+            guesses.append(guess)
+            guess_arr = [char for char in guess]
+
+            result_arr = game.make_guess(guess)
+            results.append(result_arr)
+
+            self._modify_word_lists(guess, guess_arr, result_arr, game_words, game_words_letters, possible_letters)
             self._num_guesses += 1
         game_result = game.end_game()
         return((game_result, self._num_guesses))
