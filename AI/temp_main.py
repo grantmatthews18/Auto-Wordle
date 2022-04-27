@@ -9,8 +9,6 @@ sys.path.insert(1, "Wordle-Game/")
 from game import *
 import agent as ai
 
-keys = ["q","w","e","r","t","y","u","i","o","p","a","s","d","f","g","h","j","k","l","z","x","c","v","b","n","m"]
-
 def main():
     filepath = "Words/wordle-words.json"
     with open(filepath) as words_json:
@@ -18,24 +16,13 @@ def main():
 
     total_guesses = 0
 
-    for word in list(words.keys()):
-        #word = random.choice(list(words.keys()))
+    for word in range(1): #list(words.keys())
+        word = "bauks"#random.choice(list(words.keys()))
         print("Word is ", word)
 
-        letter_weight = {}
-        for i in range(len(keys)):
-            letter_weight[keys[i]] = 1
-
-        simularity_modifier = []
-        for i in range(len(word)):
-            simularity_modifier.append(1)
-
-        double_penalty = []
-        for i in range(len(word)-2):
-            double_penalty.append(1)
-
         new_agent = ai.Agent(filepath=filepath)
-        new_game = Game(word, 6, debug_flag =True)
+        args = [word, 6, False, False, False, True]
+        new_game = Game(*args)
 
         result = new_agent.solve_game(new_game)
         total_guesses += result
