@@ -22,6 +22,7 @@ class Game():
             self._keys[keys[i]] = "x"
 
         self.game_over = False
+        self._game_result = "lose"
 
         filepath = "Words/wordle-words.json"
         with open(filepath) as words_json:
@@ -136,6 +137,8 @@ class Game():
             #print stuff if needed
         if(self._enable_gui):
             self._gui.destroy()
+
+        return(self._game_result)
 
     def _event_enter_gui(self, event):
         self.make_guess()
@@ -314,6 +317,8 @@ class Game():
             if(self._enable_verbose):
                 self._update_verbose(guess, "game_over_win")
             self.game_over = True
+            self._game_result = "win"
+
 
         #max guess reached, game lost
         elif(len(self._guesses_arr) == self._num_guesses):
@@ -322,6 +327,7 @@ class Game():
             if(self._enable_verbose):
                 self._update_verbose(guess, "game_over_lose")
             self.game_over = True
+            self._game_result ="lose"
 
         #handle information returns
         return(self._guesses_arr[len(self._guesses_arr)-1])
