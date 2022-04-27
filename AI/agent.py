@@ -379,5 +379,5 @@ class Agent():
 
             self._modify_word_lists(self._guesses[self._num_guesses], guess_arr, self._results[self._num_guesses])
             self._num_guesses += 1
-        game.end_game()
-        return(self._num_guesses)
+        game_result = game.end_game()
+        return((game_result, self._num_guesses))
