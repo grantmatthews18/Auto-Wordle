@@ -4,6 +4,7 @@ class Node():
     def __init__(self, new_cost = "null"):
         self._node_ptr_arr = []
         self._cost = new_cost
+        self._best_path = []
 
     def set_cost(self, new_cost):
         self._cost = new_cost
@@ -22,3 +23,9 @@ class Node():
 
     def num_nodes(self):
         return(len(self._node_ptr_arr))
+
+    def add_to_best_path(self, choice):
+        self._best_path.insert(0,choice)
+
+    def get_best_path(self):
+        return(self._best_path)
