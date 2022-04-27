@@ -284,7 +284,6 @@ class Agent():
         for word in words_dict.keys():
             words_itemsets[word] = []
             word_arr = [char for char in word]
-            word_2arr = []
             for i in range(len(word_arr)):
                 #split word
                 word_arr[i] = word_arr[i]+str(i)
