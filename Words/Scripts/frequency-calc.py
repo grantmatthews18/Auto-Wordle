@@ -54,10 +54,6 @@ for word in words.keys():
                 itemsets[itemset] = 1
             words_itemsets[word].append(itemset)
 
-    if(word == "cooks"):
-        print(words_itemsets[word])
-
-
 #updating words support counts and costs
 for word in words.keys():
     words[word] = [0] * (len(word)-1)
