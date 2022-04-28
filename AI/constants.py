@@ -4,4 +4,4 @@ POSSIBLE_LETTERS_DICT_TRUE = {'q': True, 'w': True, 'e': True, 'r': True, 't': T
 
 POSSIBLE_LETTERS_DICT_FALSE = {'q': False, 'w': False, 'e': False, 'r': False, 't': False, 'y': False, 'u': False, 'i': False, 'o': False, 'p': False, 'a': False, 's': False, 'd': False, 'f': False, 'g': False, 'h': False, 'j': False, 'k': False, 'l': False, 'z': False, 'x': False, 'c': False, 'v': False, 'b': False, 'n': False, 'm': False}
 
-NUMBER_OF_GAME_PARAMETERS = 6
+NUMBER_OF_GAME_PARAMETERS = 5 #excluding word
