@@ -83,18 +83,16 @@ class Agent_Coordinator():
             threads.append(mp.Process(target=self.run_agent, args=(i,dna_array[i],q,thread_lock,)))
 
         #run threads, only running specified number at a time
+        total_threads_started = 0
         for i in range(num_agents):
             while(len(mp.active_children()) >= self._num_threads):
                 #idle until thread finishes
                 None
             threads[i].start()
+            total_threads_started += 1
 
-        #join threads
-        for i in range(num_agents):
-            while(len(mp.active_children()) >= self._num_threads):
-                #idle until thread finishes
-                None
-            threads[i].join()
+        while(total_threads_started >= num_agents) and (len(mp.active_children()) > 0):
+            None
 
         #pull generation results from queue
         generation_results = {}
@@ -143,4 +141,7 @@ class Agent_Coordinator():
             print("Agent: ", agent_id, " solved word: ", word)
             thread_lock.release()
 
+        thread_lock.acquire()
+        print("Agent: ", agent_id, " finished all words. Starting new Agent.")
+        thread_lock.release()
         q.put((agent_id, agent_results))
