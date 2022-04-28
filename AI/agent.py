@@ -221,10 +221,15 @@ class Agent():
                 else:
                     best_word = self._get_guess_from_words(words_letters)
                 return(best_word)
-        #for first guess we just use all possible words
+
+        #for second guess we use letters, if possible
         elif(self._num_guesses == 1):
-            best_word = self._get_guess_from_words(words_letters)
+            if(len(words_letters) > 0):
+                best_word = self._get_guess_from_words(words_letters)
+            else:
+                best_word = self._get_guess_from_words(words)
             return(best_word)
+        #for first guess we just use all possible words
         elif(self._num_guesses == 0):
             best_word = self._get_guess_from_words(words)
             return(best_word)
@@ -346,7 +351,7 @@ class Agent():
                 words[word][len(itemset)-1] += support
             #modifying support values according to agent dna
             for i in range(len(words[word])):
-                words[word][i] = float(words[word][i]/self._dna[i])
+                words[word][i] = float(words[word][i]/(self._dna[i]/pow(10,i)))
 
         #updaing words_letters support counts based on support from words
         for word in words_letters.keys():
@@ -362,7 +367,7 @@ class Agent():
                 words_letters[word][len(itemset)-1] += support
             #modifying support values according to agent dna
             for i in range(len(words_letters[word])):
-                words_letters[word][i] = float(words_letters[word][i]/self._dna[i])
+                words_letters[word][i] = float(words_letters[word][i]/(self._dna[i]/pow(10,i)))
 
     def _modify_word_lists(self, guess, guess_arr, result, words, words_letters, possible_letters):
         #remove guess from both word sets
