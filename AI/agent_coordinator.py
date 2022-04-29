@@ -23,6 +23,10 @@ from constants import *
 #for testing
 import time
 
+def _pool_init(init_lock):
+    global thread_lock
+    thread_lock = init_lock
+
 class Agent_Coordinator():
     def __init__(self, id = 0, test_cases_filepath = None, all_words_filepath = None, game_parameters = None, num_threads = 1):
 
@@ -78,51 +82,75 @@ class Agent_Coordinator():
 
         q = mp.Queue()
 
-        #create threads
+        manager = mp.Manager()
+        pool_results_dict = manager.dict()
+
+        agent_args = []
         for i in range(num_agents):
-            threads.append(mp.Process(target=self.run_agent, args=(i,dna_array[i],q,thread_lock,)))
+            agent_args.append((i,dna_array[i],pool_results_dict))
 
-        #run threads, only running specified number at a time
-        total_threads_started = 0
-        for i in range(num_agents):
-            while(len(mp.active_children()) >= self._num_threads):
-                #idle until thread finishes
-                None
-            threads[i].start()
-            total_threads_started += 1
+        lock = mp.Lock()
 
-        while(total_threads_started >= num_agents) and (len(mp.active_children()) > 0):
-            None
+        thread_pool = mp.Pool(processes = self._num_threads, initializer=_pool_init, initargs=(lock,))
+        thread_pool.starmap(self.run_agent, agent_args)
+        thread_pool.close()
 
-        #pull generation results from queue
+
+        # #create threads
+        # for i in range(num_agents):
+        #     threads.append(mp.Process(target=self.run_agent, args=(i,dna_array[i],q,thread_lock,)))
+        #
+        # #run threads, only running specified number at a time
+        # total_threads_started = 0
+        # for i in range(num_agents):
+        #     while(len(mp.active_children()) >= self._num_threads):
+        #         time.sleep(10)
+        #         print(len(mp.active_children()), " Active Agents: ", i-1)
+        #         #idle until thread finishes
+        #         None
+        #     threads[i].start()
+        #     print("Started Agent: ", i)
+        #     total_threads_started += 1
+        #
+        # while(total_threads_started >= num_agents) and (len(mp.active_children()) > 0):
+        #     time.sleep(10)
+        #     print(len(mp.active_children()), " Active Agents: ", i-1, " (last group)")
+        #     None
+
+        # #pull generation results from queue
+        # generation_results = {}
+        # while not (q.empty()):
+        #     result = q.get()
+        #     generation_results[int(result[0])] = result[1]
+
         generation_results = {}
-        while not (q.empty()):
-            result = q.get()
-            generation_results[int(result[0])] = result[1]
+        for i in range(len(pool_results_dict)):
+            generation_results[i] = pool_results_dict[i]
 
         #add generation results to results array
         self._results[generation_id] = generation_results
 
         return(generation_results)
 
-    def run_agent(self, agent_id = 0, agent_dna = None, q = None, thread_lock = None):
+    def run_agent(self, agent_id = 0, agent_dna = None, pool_results_dict = None):
         #make sure agent's dna is valid
         if(agent_dna == None):
             raise Exception("No DNA given for Agent: ", agent_id, ". Aborting.")
         elif not (len(agent_dna) == (self._word_len-1)):
             raise Exception("DNA given for Agent: ", agent_id, " is the wrong length. Aborting.")
 
-        #checking queue is passed properly
-        if(q == None):
-            raise Exception("Invalid Queue Passed. Aborting.")
-
-        #make sure agent has access to lock
-        if(thread_lock == None):
-            raise Exception("Invalid Lock Passed. Aborting.")
+        # #checking queue is passed properly
+        # if(q == None):
+        #     raise Exception("Invalid Queue Passed. Aborting.")
+        #
+        # #make sure agent has access to lock
+        # if(thread_lock == None):
+        #     raise Exception("Invalid Lock Passed. Aborting.")
 
         thread_lock.acquire()
         #make agent
         agent = ai.Agent(id=agent_id, words=copy.deepcopy(self._words), dna=agent_dna)
+        print("Started Agent: ", agent_id)
         thread_lock.release()
 
         #dict to hold results for each of the test cases
@@ -142,6 +170,7 @@ class Agent_Coordinator():
             thread_lock.release()
 
         thread_lock.acquire()
+        pool_results_dict[agent_id] = agent_results
         print("Agent: ", agent_id, " finished all words. Starting new Agent.")
         thread_lock.release()
-        q.put((agent_id, agent_results))
+        #q.put((agent_id, agent_results))
