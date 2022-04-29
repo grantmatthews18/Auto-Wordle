@@ -13,26 +13,26 @@ import agent_coordinator as ai_coordinator
 def main():
 
     words_filepath = "Words/wordle-words.json"
-    test_cases_filepath = "Words/wordle-first_10-nyt.json"
+    test_cases_filepath = "Words/wordle-202-300-nyt.json"
     game_args = [6, False, False, False, False]
-    generation1 = ai_coordinator.Agent_Coordinator(1, test_cases_filepath, words_filepath, game_args, 28)
+    generation1 = ai_coordinator.Agent_Coordinator(1, test_cases_filepath, words_filepath, game_args, 1)
 
     dna_array =[]
 
     possible_dna_elements = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
-    for i in range(100):
+    for i in range(1):
         dna = []
         for z in range(4):
             dna.append(random.choice(possible_dna_elements))
         dna_array.append(dna)
 
-    with open("Words/dna_gen1.py", "w+") as dna_json:
+    with open("Words/dna_gen1.json", "w+") as dna_json:
         json.dump(dna_array,dna_json)
 
     gen = 1
     results = generation1.run_generation(gen, dna_array)
 
-    with open("Words/results_gen1.py", "w+") as results_json:
+    with open("Words/results_gen2.json", "w+") as results_json:
         json.dump(results, results_json)
 
 
