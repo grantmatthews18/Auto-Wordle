@@ -15,7 +15,7 @@ import multiprocessing as mp
 import sys
 sys.path.insert(1, "Wordle-Game/")
 import game
-import agent as ai
+import mod_agent as ai
 
 #Constants
 from constants import *

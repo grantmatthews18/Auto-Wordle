@@ -7,7 +7,7 @@ import copy
 
 sys.path.insert(1, "Wordle-Game/")
 from game import *
-import agent as ai
+import mod_agent as ai
 import agent_coordinator as ai_coordinator
 
 def main():
@@ -26,13 +26,13 @@ def main():
             dna.append(random.choice(possible_dna_elements))
         dna_array.append(dna)
 
-    with open("Words/dna_gen1.json", "w+") as dna_json:
+    with open("Words/dna_202-300-exp2.json", "w+") as dna_json:
         json.dump(dna_array,dna_json)
 
     gen = 1
     results = generation1.run_generation(gen, dna_array)
 
-    with open("Words/results_gen2.json", "w+") as results_json:
+    with open("Words/results_202-300-exp2.json", "w+") as results_json:
         json.dump(results, results_json)
 
 

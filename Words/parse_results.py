@@ -1,7 +1,7 @@
 import json
 import copy
 
-with open("Words/results_gen2.json","r+") as results_json:
+with open("Words/results_202-300-exp2.json","r+") as results_json:
     results = json.load(results_json)
 
 
@@ -18,3 +18,9 @@ for key in results.keys():
 
     average_guesses = total_guesses/ct
     print("Agent: ", key, ". Average guesses: ", average_guesses, ". Total Lost: ", number_lost)
+
+
+with open("Words/wordle-words.json","r+") as words_json:
+    words = json.load(words_json)
+
+print(len(list(words)))
